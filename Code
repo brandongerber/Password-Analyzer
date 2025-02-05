@@ -1,0 +1,38 @@
+import java.util.Scanner;
+
+public class PasswordAnalyzer {	
+	public static void main (String [] args) {
+		Scanner sr = new Scanner(System.in);
+				System.out.println("Insert password: ");
+				String pw = sr.nextLine();
+				sr.close();
+				
+				int score = analyzePW(pw);
+				System.out.println("Strength:");
+				if (score < 60) {
+					System.out.println("\nYour password is too weak, try another one!");
+				}
+					else if (score < 80) {
+						System.out.println("Stronger, but add characters like !@#$%^Z&*");
+				}
+					else {
+						System.out.println("Very strong password!");
+					}			
+    }
+
+	public static int analyzePW(String pw) {
+	int score = 0;
+	score += pw.length() * 4;
+	if (pw.matches(".*[a-z].*")) score += 10;
+	if (pw.matches(".*[A-Z].*")) score += 10;
+	if (pw.matches(".*[0-9].*")) score += 10;
+	if (pw.matches(".*[!@#$%^&()_+}{|'].*")) score += 20;
+	if (pw.matches(".*[a-zA-Z].*[0-9].*")) score -= 10;
+	if (pw.matches(".*[0-9].*[a-zA-Z].*")) score -= 10;
+	
+	if (score > 100) score = 100;
+	if (score < 0) score = 0;
+	
+	return score;
+	}
+}
