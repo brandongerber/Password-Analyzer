@@ -24,7 +24,7 @@ public class Script extends JFrame {
     }
 
     private void initializeUI() {
-        setTitle("Cyber Security Password Analyzer");
+        setTitle("Check your password!");
         setSize(500, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
