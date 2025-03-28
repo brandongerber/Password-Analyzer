@@ -1,0 +1,206 @@
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+
+public class Script extends JFrame {
+    private JPasswordField passwordField;
+    private JTextArea analysisArea;
+    private JLabel strengthLabel;
+
+    public Script() {
+        initializeUI();
+    }
+
+    private void initializeUI() {
+        setTitle("Cyber Security Password Analyzer");
+        setSize(500, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(null);
+
+        JLabel titleLabel = new JLabel("Password Security Analyzer");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        titleLabel.setBounds(100, 20, 300, 30);
+        mainPanel.add(titleLabel);
+
+        JLabel passwordLabel = new JLabel("Enter Password:");
+        passwordLabel.setBounds(50, 70, 150, 25);
+        mainPanel.add(passwordLabel);
+
+        passwordField = new JPasswordField();
+        passwordField.setBounds(200, 70, 250, 25);
+        mainPanel.add(passwordField);
+
+        JButton analyzeButton = new JButton("Analyze Password");
+        analyzeButton.setBounds(175, 110, 150, 30);
+        mainPanel.add(analyzeButton);
+
+        strengthLabel = new JLabel("Strength: ");
+        strengthLabel.setBounds(50, 150, 400, 25);
+        strengthLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        mainPanel.add(strengthLabel);
+
+        analysisArea = new JTextArea();
+        analysisArea.setBounds(50, 180, 400, 150);
+        analysisArea.setEditable(false);
+        analysisArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        mainPanel.add(analysisArea);
+
+        analyzeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String password = new String(passwordField.getPassword());
+                analyzePassword(password);
+            }
+        });
+
+        add(mainPanel);
+    }
+
+    private void analyzePassword(String password) {
+        int securityScore = calculatePasswordStrength(password);
+        
+        
+        if (securityScore < 40) {
+            strengthLabel.setForeground(Color.RED);
+            strengthLabel.setText("Strength: VERY WEAK");
+        } else if (securityScore < 60) {
+            strengthLabel.setForeground(Color.ORANGE);
+            strengthLabel.setText("Strength: WEAK");
+        } else if (securityScore < 80) {
+            strengthLabel.setForeground(Color.BLUE);
+            strengthLabel.setText("Strength: MODERATE");
+        } else {
+            strengthLabel.setForeground(Color.GREEN);
+            strengthLabel.setText("Strength: STRONG");
+        }
+
+        
+        StringBuilder analysis = new StringBuilder();
+        analysis.append("Password Analysis Report:\n\n");
+        
+        
+        analysis.append("Length: ");
+        if (password.length() < 8) {
+            analysis.append("Too Short (< 8 characters)\n");
+        } else if (password.length() < 12) {
+            analysis.append("Moderate (8-11 characters)\n");
+        } else {
+            analysis.append("Strong (12+ characters)\n");
+        }
+
+        
+        analysis.append("Character Diversity:\n");
+        analysis.append("- Lowercase: ").append(hasLowercase(password) ? "✓ " : "✗ ").append("\n");
+        analysis.append("- Uppercase: ").append(hasUppercase(password) ? "✓ " : "✗ ").append("\n");
+        analysis.append("- Numbers: ").append(hasNumbers(password) ? "✓ " : "✗ ").append("\n");
+        analysis.append("- Special Characters: ").append(hasSpecialChars(password) ? "✓ " : "✗ ").append("\n");
+
+        
+        analysis.append("\nAdvanced Security Checks:\n");
+        analysis.append("- Common Patterns: ").append(checkCommonPatterns(password) ? "⚠️ Detected" : "✓ None Found").append("\n");
+        analysis.append("- Predictable Sequences: ").append(hasSequentialChars(password) ? "⚠️ Present" : "✓ Safe").append("\n");
+
+        analysis.append("\nSecurity Score: ").append(securityScore).append("/100");
+        
+        analysisArea.setText(analysis.toString());
+    }
+
+    private int calculatePasswordStrength(String password) {
+        int score = 0;
+
+        
+        score += Math.min(password.length() * 4, 40);
+
+        
+        if (hasLowercase(password)) score += 10;
+        if (hasUppercase(password)) score += 10;
+        if (hasNumbers(password)) score += 10;
+        if (hasSpecialChars(password)) score += 20;
+
+        
+        if (checkCommonPatterns(password)) score -= 15;
+        if (hasSequentialChars(password)) score -= 10;
+
+        
+        return Math.max(0, Math.min(score, 100));
+    }
+
+    
+    private boolean hasLowercase(String password) {
+        return password.matches(".*[a-z].*");
+    }
+
+    private boolean hasUppercase(String password) {
+        return password.matches(".*[A-Z].*");
+    }
+
+    private boolean hasNumbers(String password) {
+        return password.matches(".*[0-9].*");
+    }
+
+    private boolean hasSpecialChars(String password) {
+        return password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*");
+    }
+
+    private boolean checkCommonPatterns(String password) {
+        String[] commonPatterns = {
+            "123", "abc", "qwe", "password", "123456", 
+            "admin", "letmein", "welcome"
+        };
+        
+        for (String pattern : commonPatterns) {
+            if (password.toLowerCase().contains(pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasSequentialChars(String password) {
+       
+        String[][] sequentialKeyboards = {
+            {"qwertyuiop", "asdfghjkl", "zxcvbnm"},
+            {"1234567890"}
+        };
+
+        for (String[] keyboardRow : sequentialKeyboards) {
+            for (String row : keyboardRow) {
+                if (isSubsequenceInOrder(password.toLowerCase(), row)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isSubsequenceInOrder(String password, String sequence) {
+        for (int i = 0; i < sequence.length() - 2; i++) {
+            String subseq = sequence.substring(i, i + 3);
+            if (password.contains(subseq)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new Script().setVisible(true);
+        });
+    }
+}
